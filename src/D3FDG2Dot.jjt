@@ -1,0 +1,196 @@
+/**
+ * JJTree template file created by SF JavaCC plugin 1.5.28+ wizard for JavaCC 1.5.0+
+ */
+options
+{
+  static = true;
+  LOOKAHEAD = 1;
+}
+
+PARSER_BEGIN(D3FDG2Dot)
+import java.io.InputStream;
+
+public class D3FDG2Dot
+{
+  
+  public static void main(String args [])
+  {
+		InputStream in = D3FDG2Dot.class.getClassLoader()
+                              .getResourceAsStream("miserables.json");
+    
+        D3FDG2Dot parseJson = new D3FDG2Dot(in); //miserables.json tem de estar na pasta src
+        SimpleNode root = null;
+		try {
+			root = parseJson.Start();
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
+
+        root.dump(""); // imprime no ecrã a árvore
+  }
+
+}
+
+PARSER_END(D3FDG2Dot)
+
+SKIP :
+{
+  " "
+| "\t"
+| "\n"
+| "\r"
+}
+
+TOKEN:
+{
+ 	< #CHARACTER:  ["a"-"z","A"-"Z","0"-"9","/","'","`","(",")","*","-","|","&","\\",".","$","!","@","#","%","^","_","+","?","<",">","~"] >
+|   <  INTEGER : ["0"-"9"] (["0"-"9"] )* >
+}
+
+TOKEN : /* Open, close and dots */
+{
+/* Open and Close File Chars */
+  < OPEN_CURLY_BRACKETS : "{" >
+| < CLOSE_CURLY_BRACKETS : "}" >
+	/* Open and Close List Chars */
+| <  OPEN_LIST  : "[" >
+| <  CLOSE_LIST  : "]" >
+	/* Syntax Pontuation */
+| < COMMA : "," >
+| <  DOUBLE_DOT  : ":" >
+| <  INVERTED_COMMAS  : "\"" >
+}
+
+TOKEN: /* Structure */
+{	
+ <  NODES_TOKEN  : "nodes" > 
+| <  NAME_TOKEN  : "name" >
+| <  GROUP_TOKEN  : "group" >
+| <  LINKS_TOKEN  : "links" >
+| <  SOURCE_TOKEN  : "source" >
+| <  TARGET_TOKEN  : "target" >
+| <  VALUE_TOKEN  : "value" >
+|   <  NAME : (<CHARACTER> (<CHARACTER>)* ) > 
+}
+
+public SimpleNode Start() :{}
+{
+	BeginParser()
+	{
+	  return jjtThis;
+	}
+}
+
+void BeginParser() #void :{} //{"nodes":[....], "links":[....]}  
+{
+	 <OPEN_CURLY_BRACKETS> NodesList() <COMMA> LinksList() <CLOSE_CURLY_BRACKETS>
+}
+
+//NODES
+void NodesList() #void :{} //"nodes":[....]
+{
+	 NodesToken() <DOUBLE_DOT> <OPEN_LIST> ArrayNodes() <CLOSE_LIST>
+}
+
+void NodesToken() #void :{} //"nodes"
+{
+  	<INVERTED_COMMAS> <NODES_TOKEN> <INVERTED_COMMAS>
+}
+
+void ArrayNodes() #void :{}
+{
+  Node() [<COMMA> ArrayNodes()]
+// Recursividade para completar lista de nós. no + virgula lista de nos OU no
+}
+
+void Node() :{} //{"name":"Myriel","group":1}
+{
+	<OPEN_CURLY_BRACKETS> NodeContent() <CLOSE_CURLY_BRACKETS>
+}
+
+void NodeContent() #void :{} //"name":"Myriel","group":1
+{
+	NameContent() < COMMA > GroupContent()
+}
+
+void NameContent() #void :{} //"name":"Myriel"
+{
+ 	NameToken() < DOUBLE_DOT > Name()
+}
+
+void NameToken() #void :{} //"name"
+{
+ 	< INVERTED_COMMAS > < NAME_TOKEN > < INVERTED_COMMAS >
+}
+
+void Name() #void :{} //"Myriel"
+{
+	< INVERTED_COMMAS >	< NAME > < INVERTED_COMMAS >
+}
+
+void GroupContent() #void :{} //"group":1
+{
+	GroupToken() < DOUBLE_DOT > < INTEGER >
+}
+
+void GroupToken() #void :{} //"group"
+{
+	< INVERTED_COMMAS >	< GROUP_TOKEN > < INVERTED_COMMAS >
+}
+
+//LINKS
+void LinksList() #void :{} //"links":[....]
+{
+	LinksToken() <DOUBLE_DOT> <OPEN_LIST> ArrayLinks() <CLOSE_LIST>
+}
+
+void LinksToken() #void :{} //"links"
+{
+  	<INVERTED_COMMAS> <LINKS_TOKEN> <INVERTED_COMMAS>
+}
+
+void ArrayLinks() #void :{}
+{
+	Link() [< COMMA > ArrayLinks()]
+// Recursividade para completar lista de arestas. aresta + virgula lista de arestas OU aresta
+}
+
+void Link() #void :{} //{"source":1,"target":0,"value":1}
+{
+	< OPEN_CURLY_BRACKETS > LinkContent() < CLOSE_CURLY_BRACKETS >
+}
+
+void LinkContent() #void :{} //"source":1,"target":0,"value":1
+{
+  	SourceContent() < COMMA > TargetContent() < COMMA > ValueContent()
+}
+
+void SourceContent() #void :{} //"source":1
+{
+	SourceToken() < DOUBLE_DOT > < INTEGER >
+}
+
+void SourceToken() #void :{} //"source"
+{
+	< INVERTED_COMMAS > < SOURCE_TOKEN > < INVERTED_COMMAS >
+}
+
+void TargetContent() #void :{} //"target":0
+{
+	TargetToken() < DOUBLE_DOT > < INTEGER >
+}
+
+void TargetToken() #void :{} //"target"
+{
+	< INVERTED_COMMAS > < TARGET_TOKEN > < INVERTED_COMMAS >
+}
+
+void ValueContent() #void :{} //"value":1
+{
+	ValueToken() < DOUBLE_DOT > < INTEGER >
+}
+
+void ValueToken() #void :{} //"value"
+{
+	< INVERTED_COMMAS > < VALUE_TOKEN > < INVERTED_COMMAS >
+}
