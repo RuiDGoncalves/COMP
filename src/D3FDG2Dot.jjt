@@ -8,26 +8,68 @@ options
 }
 
 PARSER_BEGIN(D3FDG2Dot)
+import java.io.File;
 import java.io.InputStream;
+import java.net.URL;
+import java.util.Scanner;
 
 public class D3FDG2Dot
 {
-  
-  public static void main(String args [])
-  {
-		InputStream in = D3FDG2Dot.class.getClassLoader()
-                              .getResourceAsStream("miserables.json");
-    
-        D3FDG2Dot parseJson = new D3FDG2Dot(in); //miserables.json tem de estar na pasta src
-        SimpleNode root = null;
-		try {
-			root = parseJson.Start();
-		} catch (ParseException e) {
-			e.printStackTrace();
+
+  	public static String addFile(){
+
+		String filename = "";
+		boolean exists = false;
+
+		while(exists == false){
+			System.out.println("Enter the name of file which you want to back up:");
+			Scanner input = new Scanner(System.in);
+			filename = input.nextLine();
+
+			try{
+				InputStream in = D3FDG2Dot.class.getClassLoader()
+	                              .getResourceAsStream(filename);
+				D3FDG2Dot parseJson = new D3FDG2Dot(in);
+	        	exists=true;
+			} catch(NullPointerException e){
+				System.out.println("Invalid file.");
+				continue;
+			}
 		}
 
-        root.dump(""); // imprime no ecrã a árvore
-  }
+		return filename;
+	}
+	
+	  public static void main(String args [])
+	  {
+	    String filename = "";
+		boolean exists = false;
+		D3FDG2Dot parseJson = null;
+		
+		
+			System.out.println("Enter the name of file which you want to back up:");
+			Scanner input = new Scanner(System.in);
+			filename = input.nextLine();
+
+			try{
+				InputStream in = D3FDG2Dot.class.getClassLoader()
+	                              .getResourceAsStream(filename);
+				parseJson = new D3FDG2Dot(in);  //filename tem de estar na pasta src
+	        	exists=true;
+			} catch(NullPointerException e){
+				System.out.println("Invalid file.");
+				System.exit(0);
+			}
+		
+	        SimpleNode root = null;
+			try {
+				root = parseJson.Start();
+			} catch (ParseException e) {
+				e.printStackTrace();
+			}
+	
+	        root.dump(""); // imprime no ecrã a árvore
+	  }
 
 }
 
@@ -50,26 +92,26 @@ TOKEN:
 TOKEN : /* Open, close and dots */
 {
 /* Open and Close File Chars */
-  < OPEN_CURLY_BRACKETS : "{" >
-| < CLOSE_CURLY_BRACKETS : "}" >
+  	<  OPEN_CURLY_BRACKETS : "{" >
+| 	<  CLOSE_CURLY_BRACKETS : "}" >
 	/* Open and Close List Chars */
-| <  OPEN_LIST  : "[" >
-| <  CLOSE_LIST  : "]" >
+| 	<  OPEN_LIST  : "[" >
+| 	<  CLOSE_LIST  : "]" >
 	/* Syntax Pontuation */
-| < COMMA : "," >
-| <  DOUBLE_DOT  : ":" >
-| <  INVERTED_COMMAS  : "\"" >
+| 	<  COMMA : "," >
+| 	<  DOUBLE_DOT  : ":" >
+| 	<  INVERTED_COMMAS  : "\"" >
 }
 
 TOKEN: /* Structure */
 {	
- <  NODES_TOKEN  : "nodes" > 
-| <  NAME_TOKEN  : "name" >
-| <  GROUP_TOKEN  : "group" >
-| <  LINKS_TOKEN  : "links" >
-| <  SOURCE_TOKEN  : "source" >
-| <  TARGET_TOKEN  : "target" >
-| <  VALUE_TOKEN  : "value" >
+ 	<  NODES_TOKEN  : "nodes" > 
+|	<  NAME_TOKEN  : "name" >
+| 	<  GROUP_TOKEN  : "group" >
+| 	<  LINKS_TOKEN  : "links" >
+| 	<  SOURCE_TOKEN  : "source" >
+| 	<  TARGET_TOKEN  : "target" >
+| 	<  VALUE_TOKEN  : "value" >
 |   <  NAME : (<CHARACTER> (<CHARACTER>)* ) > 
 }
 
@@ -81,116 +123,202 @@ public SimpleNode Start() :{}
 	}
 }
 
-void BeginParser() #void :{} //{"nodes":[....], "links":[....]}  
+void BeginParser()  :{} //{"nodes":[....], "links":[....]}  
 {
-	 <OPEN_CURLY_BRACKETS> NodesList() <COMMA> LinksList() <CLOSE_CURLY_BRACKETS>
+  	try  	{    	TermOpenCurlyBrackets() NodesList() TermComma() LinksList() TermCloseCurlyBrackets()
+	} catch (ParseException excep)
+	{
+		 System.out.println(excep.toString() + "\n Fatal Error. Please verify your file content.");
+	}
 }
 
 //NODES
-void NodesList() #void :{} //"nodes":[....]
+void NodesList()  :{} //"nodes":[....]
 {
-	 NodesToken() <DOUBLE_DOT> <OPEN_LIST> ArrayNodes() <CLOSE_LIST>
+	 NodesToken() TermDoubleDot() TermOpenList() ArrayNodes() TermCloseList()
 }
 
-void NodesToken() #void :{} //"nodes"
+void NodesToken() : {} //"nodes"
 {
-  	<INVERTED_COMMAS> <NODES_TOKEN> <INVERTED_COMMAS>
+  	TermInvertedCommas() TermNodesToken() TermInvertedCommas()
 }
 
-void ArrayNodes() #void :{}
-{
-  Node() [<COMMA> ArrayNodes()]
-// Recursividade para completar lista de nós. no + virgula lista de nos OU no
+void ArrayNodes() : {}// Recursividade para completar lista de nós. no + virgula lista de nos OU no
+{    try
+  	{
+    	Node() (TermComma() Node())*
+	}
+	catch (ParseException excep)
+	{
+		error_skipto(CLOSE_CURLY_BRACKETS, excep);
+		TermComma();
+		ArrayNodes();
+	}
 }
 
-void Node() :{} //{"name":"Myriel","group":1}
+void Node()  :{} //{"name":"Myriel","group":1}
 {
-	<OPEN_CURLY_BRACKETS> NodeContent() <CLOSE_CURLY_BRACKETS>
+	TermOpenCurlyBrackets() NodeContent() TermCloseCurlyBrackets()
 }
 
-void NodeContent() #void :{} //"name":"Myriel","group":1
+void NodeContent()  :{} //"name":"Myriel","group":1
 {
-	NameContent() < COMMA > GroupContent()
+	NameContent() TermComma() GroupContent()
 }
 
-void NameContent() #void :{} //"name":"Myriel"
+void NameContent()  :{} //"name":"Myriel"
 {
- 	NameToken() < DOUBLE_DOT > Name()
+ 	TermInvertedCommas() TermNameToken() TermInvertedCommas() TermDoubleDot() TermInvertedCommas() TermName() TermInvertedCommas()
 }
 
-void NameToken() #void :{} //"name"
+void GroupContent()  :{} //"group":1
 {
- 	< INVERTED_COMMAS > < NAME_TOKEN > < INVERTED_COMMAS >
-}
-
-void Name() #void :{} //"Myriel"
-{
-	< INVERTED_COMMAS >	< NAME > < INVERTED_COMMAS >
-}
-
-void GroupContent() #void :{} //"group":1
-{
-	GroupToken() < DOUBLE_DOT > < INTEGER >
-}
-
-void GroupToken() #void :{} //"group"
-{
-	< INVERTED_COMMAS >	< GROUP_TOKEN > < INVERTED_COMMAS >
+	TermInvertedCommas() TermGroupToken() TermInvertedCommas() TermDoubleDot() TermInteger()
 }
 
 //LINKS
-void LinksList() #void :{} //"links":[....]
+void LinksList()  :{} //"links":[....]
 {
-	LinksToken() <DOUBLE_DOT> <OPEN_LIST> ArrayLinks() <CLOSE_LIST>
+	TermInvertedCommas() TermLinksToken() TermInvertedCommas() TermDoubleDot() TermOpenList() ArrayLinks() TermCloseList()
 }
 
-void LinksToken() #void :{} //"links"
+void ArrayLinks()  :{} // Recursividade para completar lista de arestas. aresta + virgula lista de arestas OU aresta
 {
-  	<INVERTED_COMMAS> <LINKS_TOKEN> <INVERTED_COMMAS>
+  	try  	{    	Link() (TermComma() Link())*
+	}
+	catch (ParseException excep)
+	{
+		error_skipto(CLOSE_CURLY_BRACKETS, excep);
+		TermComma();
+		ArrayLinks();
+	}
 }
 
-void ArrayLinks() #void :{}
+void Link()  :{} //{"source":1,"target":0,"value":1}
 {
-	Link() [< COMMA > ArrayLinks()]
-// Recursividade para completar lista de arestas. aresta + virgula lista de arestas OU aresta
+	TermOpenCurlyBrackets() LinkContent() TermCloseCurlyBrackets()
 }
 
-void Link() #void :{} //{"source":1,"target":0,"value":1}
+void LinkContent()  :{} //"source":1,"target":0,"value":1
 {
-	< OPEN_CURLY_BRACKETS > LinkContent() < CLOSE_CURLY_BRACKETS >
+  	SourceContent() TermComma() TargetContent() TermComma() ValueContent()
 }
 
-void LinkContent() #void :{} //"source":1,"target":0,"value":1
+void SourceContent()  :{} //"source":1
 {
-  	SourceContent() < COMMA > TargetContent() < COMMA > ValueContent()
+	TermInvertedCommas() TermSourceToken() TermInvertedCommas() TermDoubleDot() TermInteger()
 }
 
-void SourceContent() #void :{} //"source":1
+void TargetContent()  :{} //"target":0
 {
-	SourceToken() < DOUBLE_DOT > < INTEGER >
+	TermInvertedCommas() TermTargetToken() TermInvertedCommas() TermDoubleDot() TermInteger()
 }
 
-void SourceToken() #void :{} //"source"
-{
-	< INVERTED_COMMAS > < SOURCE_TOKEN > < INVERTED_COMMAS >
+void ValueContent()  :{} //"value":1
+{	TermInvertedCommas() TermValueToken() TermInvertedCommas() TermDoubleDot() TermInteger()
 }
 
-void TargetContent() #void :{} //"target":0
-{
-	TargetToken() < DOUBLE_DOT > < INTEGER >
+JAVACODE
+void error_skipto(int kind, ParseException excep) {
+  System.out.println(excep.toString());  // print the error message
+  Token t;
+  do {
+    t = getNextToken();
+  } while (t.kind != kind);
 }
 
-void TargetToken() #void :{} //"target"
-{
-	< INVERTED_COMMAS > < TARGET_TOKEN > < INVERTED_COMMAS >
+
+//termination symbols
+void TermInvertedCommas() : {}
+{	<INVERTED_COMMAS>
+	{jjtThis.val = "\"";}
 }
 
-void ValueContent() #void :{} //"value":1
+void TermNodesToken() : {} //"nodes"
 {
-	ValueToken() < DOUBLE_DOT > < INTEGER >
+	<NODES_TOKEN>
+  	{jjtThis.val = "nodes";}
 }
 
-void ValueToken() #void :{} //"value"
+void TermLinksToken() : {} //"links"
 {
-	< INVERTED_COMMAS > < VALUE_TOKEN > < INVERTED_COMMAS >
+	<LINKS_TOKEN>
+  	{jjtThis.val = "links";}
+}
+
+void TermNameToken() : {} //"name"
+{
+	<NAME_TOKEN>
+  	{jjtThis.val = "name";}
+}
+
+void TermGroupToken() : {} //"group"
+{
+	<GROUP_TOKEN>
+  	{jjtThis.val = "group";}
+}
+
+void TermSourceToken() : {} //"source"
+{
+	<SOURCE_TOKEN>
+  	{jjtThis.val = "source";}
+}
+
+void TermTargetToken() : {} //"target"
+{
+	<TARGET_TOKEN>
+  	{jjtThis.val = "target";}
+}
+
+void TermValueToken() : {} //"value"
+{
+	<VALUE_TOKEN>
+	{jjtThis.val = "value";}
+}
+
+void TermDoubleDot() : {}
+{	<DOUBLE_DOT> 
+	{jjtThis.val = ":";} 
+}
+
+void TermInteger() : {Token t;}
+{
+	t = <INTEGER>
+  	{jjtThis.val = t.image;}
+}
+
+void TermName() : {Token t;}
+{
+	t = <NAME>
+	{jjtThis.val = t.image;}
+}
+
+void TermComma() : {}
+{
+	<COMMA> 
+	{jjtThis.val = ",";} 
+}
+
+void TermOpenCurlyBrackets() : {} //#open
+{
+	<OPEN_CURLY_BRACKETS> 
+	{jjtThis.val = "{";} 
+}
+
+void TermCloseCurlyBrackets() : {} //#close
+{
+	<CLOSE_CURLY_BRACKETS> 
+	{jjtThis.val = "}";} 
+}
+
+void TermOpenList() : {} //#openlist closelist
+{
+	<OPEN_LIST> 
+	{jjtThis.val = "[";} 
+}
+
+void TermCloseList() : {}
+{
+	<CLOSE_LIST> 
+	{jjtThis.val = "]";} 
 }
