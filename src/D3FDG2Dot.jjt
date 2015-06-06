@@ -12,64 +12,70 @@ import java.io.File;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Scanner;
+package graph;
 
 public class D3FDG2Dot
 {
-
-  	public static String addFile(){
-
-		String filename = "";
-		boolean exists = false;
-
-		while(exists == false){
-			System.out.println("Enter the name of file which you want to back up:");
-			Scanner input = new Scanner(System.in);
-			filename = input.nextLine();
-
-			try{
-				InputStream in = D3FDG2Dot.class.getClassLoader()
-	                              .getResourceAsStream(filename);
-				D3FDG2Dot parseJson = new D3FDG2Dot(in);
-	        	exists=true;
-			} catch(NullPointerException e){
-				System.out.println("Invalid file.");
-				continue;
-			}
-		}
-
-		return filename;
-	}
-	
-	  public static void main(String args [])
-	  {
+  		
+	public static void main(String args [])
+	{
 	    String filename = "";
 		boolean exists = false;
 		D3FDG2Dot parseJson = null;
-		
-		
-			System.out.println("Enter the name of file which you want to back up:");
-			Scanner input = new Scanner(System.in);
-			filename = input.nextLine();
+				
+		System.out.println("Enter the name of file which you want to back up:");
+		Scanner input = new Scanner(System.in);
+		filename = input.nextLine();
 
-			try{
-				InputStream in = D3FDG2Dot.class.getClassLoader()
-	                              .getResourceAsStream(filename);
-				parseJson = new D3FDG2Dot(in);  //filename tem de estar na pasta src
-	        	exists=true;
-			} catch(NullPointerException e){
-				System.out.println("Invalid file.");
-				System.exit(0);
-			}
-		
-	        SimpleNode root = null;
-			try {
-				root = parseJson.Start();
-			} catch (ParseException e) {
-				e.printStackTrace();
-			}
+		try{
+			InputStream in = D3FDG2Dot.class.getClassLoader()
+                              .getResourceAsStream(filename);
+			parseJson = new D3FDG2Dot(in);  //filename tem de estar na pasta src
+        	exists=true;
+		} catch(NullPointerException e){
+			System.out.println("Invalid file.");
+			System.exit(0);
+		}
 	
-	        root.dump(""); // imprime no ecrã a árvore
-	  }
+        SimpleNode root = null;
+		try {
+			root = parseJson.Start();
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
+
+        root.dump(""); // imprime no ecrã a árvore
+
+		//verificar regras
+		System.out.println("\nStarting semantic analisys...\n");
+	 	boolean noerror = root.semanticDump();
+		System.out.println("\nEnd of semantic analisys.\n");
+
+		if(noerror == false) return;
+
+		ArrayList<Nodes > nodes = root.getNodesArray();
+		ArrayList<Nodes > links = root.getLinksArray();
+
+		Graph grafo = new Graph();
+		
+		/*for(Nodes no : nodes) {
+		  	Vertex vertice = new Vertex(no.getName());			grafo.add(no.getGroup(), no);
+		}*/
+		
+		for(Links li : links) {
+
+			Nodes noSource = nodes.get(li.getSource());
+			Vertex verticeS = new Vertex(noSource.getName());
+			grafo.add(noSource.getGroup(), noSource);
+
+			Nodes noTarget = nodes.get(li.getTarget());
+			Vertex verticeT = new Vertex(noTarget.getName());
+		  	grafo.add(noTarget.getGroup(), noTarget);
+		  
+		  	Edge aresta = new Edge(verticeS, verticeT, li.getValue());
+			grafo.add(aresta);
+		}
+	}
 
 }
 
@@ -173,7 +179,7 @@ void NameContent()  :{} //"name":"Myriel"
 
 void GroupContent()  :{} //"group":1
 {
-	TermInvertedCommas() TermGroupToken() TermInvertedCommas() TermDoubleDot() TermInteger()
+	TermInvertedCommas() TermGroupToken() TermInvertedCommas() TermDoubleDot() TermIntegerGroup()
 }
 
 //LINKS
@@ -206,16 +212,16 @@ void LinkContent()  :{} //"source":1,"target":0,"value":1
 
 void SourceContent()  :{} //"source":1
 {
-	TermInvertedCommas() TermSourceToken() TermInvertedCommas() TermDoubleDot() TermInteger()
+	TermInvertedCommas() TermSourceToken() TermInvertedCommas() TermDoubleDot() TermIntegerSource()
 }
 
 void TargetContent()  :{} //"target":0
 {
-	TermInvertedCommas() TermTargetToken() TermInvertedCommas() TermDoubleDot() TermInteger()
+	TermInvertedCommas() TermTargetToken() TermInvertedCommas() TermDoubleDot() TermIntegerTarget()
 }
 
 void ValueContent()  :{} //"value":1
-{	TermInvertedCommas() TermValueToken() TermInvertedCommas() TermDoubleDot() TermInteger()
+{	TermInvertedCommas() TermValueToken() TermInvertedCommas() TermDoubleDot() TermIntegerValue()
 }
 
 JAVACODE
@@ -281,16 +287,39 @@ void TermDoubleDot() : {}
 	{jjtThis.val = ":";} 
 }
 
-void TermInteger() : {Token t;}
+void TermIntegerGroup() : {Token t;}
 {
 	t = <INTEGER>
-  	{jjtThis.val = t.image;}
+  	{jjtThis.val = t.image;
+  	jjtThis.line = t.beginLine;}
+}
+
+void TermIntegerSource() : {Token t;}
+{
+	t = <INTEGER>
+  	{jjtThis.val = t.image;
+  	jjtThis.line = t.beginLine;}
+}
+
+void TermIntegerTarget() : {Token t;}
+{
+	t = <INTEGER>
+  	{jjtThis.val = t.image;
+  	jjtThis.line = t.beginLine;}
+}
+
+void TermIntegerValue() : {Token t;}
+{
+	t = <INTEGER>
+  	{jjtThis.val = t.image;
+  	jjtThis.line = t.beginLine;}
 }
 
 void TermName() : {Token t;}
 {
 	t = <NAME>
-	{jjtThis.val = t.image;}
+	{jjtThis.val = t.image;
+  	jjtThis.line = t.beginLine;}
 }
 
 void TermComma() : {}
