@@ -1,0 +1,20 @@
+hash nos mapeados por nome
+no-> ref de adjacencias
+ao adicionar os links usar os apontadores para o no no array, em vez do indice lido no ficheiro
+EX: 
+new Link(38y) (source, target, value)
+link.addParam:....
+edges.add(link)
+nodes[source].addLink(link)
+nodes[target].addLink(link)
+
+nodes.add(node);
+-> Côr por grupo
+-> Variar o tamanho das aresta
+
+
+/* Extras */
+
+
+-> Identificar as estrelas da rede (p.e. mudar a forma)
+-> Mostrar caminhos mais curtos entre 2 nós

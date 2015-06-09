@@ -1,0 +1,52 @@
+analise semantica
+
+verificar se os grupos existem.
+verificar se os nos tem nomes diferentes.
+verificar se os nos de origem e destino existem.
+verificar o valor do value. Escala de 1 a 99.
+verificar se o link nao tem o par source e target repetido
+verificar se no proprio link o par source e target sao diferentes 
+
+
+Em codigo
+
+criar classes Nodes e Links
+criar array de Nodes e Links
+
+
+começar a ler o miserables.json
+	
+	ler os nodes
+		guardar os nodes no array à medida que se vao lendo as linhas
+		verificar se ja existe o mesmo nome
+			Exibir mensagem de erro caso exista erro
+		avançar para o proximo node
+
+
+	ler os links
+		guardar os links no array a medida que se vao lendo as linhas
+		verificar se o index origem/destino existem no array Nodes
+			Exibir mensagem de erro caso exista erro
+		verificar se o valor esta compreendido entre 1 a 99 
+
+termina
+
+
+
+
+
+
+class Node
+  	id = 0; incrementa a cada novo Node criado pelo construtor
+	string nome;
+	int group;
+	
+	get(); nao vai ter sets
+
+
+class Link
+	int source;
+	int target;
+	int value;
+
+	get(); nao vai ter sets

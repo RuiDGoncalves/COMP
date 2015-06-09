@@ -9,14 +9,15 @@ public class Nodes {
 	
 	
 	public Nodes(int id, int group, String name) {
-		this.id = id;
+		this.id = ID;
 		this.group = group;
 		this.name = name;
+		ID++;
 	}
 	
 	public Nodes() {
 		id = ID;
-		ID++;
+		//ID++;
 	}
 	
 	public int getId(){

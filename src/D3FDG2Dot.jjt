@@ -12,7 +12,7 @@ import java.io.File;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Scanner;
-package graph;
+import java.util.ArrayList;
 
 public class D3FDG2Dot
 {
@@ -54,31 +54,20 @@ public class D3FDG2Dot
 		if(noerror == false) return;
 
 		ArrayList<Nodes > nodes = root.getNodesArray();
-		ArrayList<Nodes > links = root.getLinksArray();
+		ArrayList<Links > links = root.getLinksArray();
 
 		Graph grafo = new Graph();
 		
-		/*for(Nodes no : nodes) {
-		  	Vertex vertice = new Vertex(no.getName());			grafo.add(no.getGroup(), no);
-		}*/
-		
-		for(Links li : links) {
+		for(Nodes node : nodes) {
+                	grafo.addNode(node);
+                }
 
-			Nodes noSource = nodes.get(li.getSource());
-			Vertex verticeS = new Vertex(noSource.getName());
-			grafo.add(noSource.getGroup(), noSource);
-
-			Nodes noTarget = nodes.get(li.getTarget());
-			Vertex verticeT = new Vertex(noTarget.getName());
-		  	grafo.add(noTarget.getGroup(), noTarget);
-		  
-		  	Edge aresta = new Edge(verticeS, verticeT, li.getValue());
-			grafo.add(aresta);
-		}
-	}
-
+                for(Links li : links) {
+                	grafo.addLink(li);
+                }
+		 Printer writer = new Printer(grafo, links, nodes);
+                writer.createFile();
 }
-
 PARSER_END(D3FDG2Dot)
 
 SKIP :
@@ -92,7 +81,7 @@ SKIP :
 TOKEN:
 {
  	< #CHARACTER:  ["a"-"z","A"-"Z","0"-"9","/","'","`","(",")","*","-","|","&","\\",".","$","!","@","#","%","^","_","+","?","<",">","~"] >
-|   <  INTEGER : ["0"-"9"] (["0"-"9"] )* >
+|   <  INTEGER : ["0"-"9"] (["0"-"9"])* >
 }
 
 TOKEN : /* Open, close and dots */
