@@ -28,7 +28,7 @@ public class D3FDG2Dot
 	public static void main(String args [])
 	{
 	    String filename = "";
-		boolean exists = false;
+		boolean exists = false, sintaticError = false;
 		D3FDG2Dot parseJson = null;
 				
 		System.out.println("Enter the name of file which you want to back up:");
@@ -53,13 +53,15 @@ public class D3FDG2Dot
 		}
 
         root.dump(""); // imprime no ecrã a árvore
+		
+		if(root.getNoSintaticError() == false) return;
 
 		//verificar regras
 		System.out.println("\nStarting semantic analisys...\n");
-	 	boolean noerror = root.semanticDump();
+	 	boolean noSemanticError = root.semanticDump();
 		System.out.println("\nEnd of semantic analisys.\n");
 
-		if(noerror == false) return;
+		if(noSemanticError == false) return;
 
 		ArrayList<Nodes > nodes = root.getNodesArray();
 		ArrayList<Links > links = root.getLinksArray();
@@ -101,6 +103,8 @@ public class D3FDG2Dot
 
 		for(Vertex vertex : path)		{			System.out.println(vertex);
 		}
+		ParseDot parseDot = new ParseDot(grafo);
+        parseDot.createFile();
 
 	}
 }
@@ -160,6 +164,7 @@ void BeginParser()  :{} //{"nodes":[....], "links":[....]}
 	} catch (ParseException excep)
 	{
 		 System.out.println(excep.toString() + "\n Fatal Error. Please verify your file content.");
+		 {jjtThis.noSintaticError = false;}
 	}
 }
 
@@ -184,6 +189,7 @@ void ArrayNodes() : {}// Recursividade para completar lista de nós. no + virgula
 		error_skipto(CLOSE_CURLY_BRACKETS, excep);
 		TermComma();
 		ArrayNodes();
+		{jjtThis.noSintaticError = false;}
 	}
 }
 
@@ -222,6 +228,7 @@ void ArrayLinks()  :{} // Recursividade para completar lista de arestas. aresta 
 		error_skipto(CLOSE_CURLY_BRACKETS, excep);
 		TermComma();
 		ArrayLinks();
+		{jjtThis.noSintaticError = false;}
 	}
 }
 

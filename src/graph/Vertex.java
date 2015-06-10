@@ -35,5 +35,9 @@ public class Vertex {
 	public String toString(){
 		return name;
 	}
+
+	public List<Edge> getEdges() {
+		return edges;
+	}
 		
 }
