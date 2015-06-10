@@ -61,12 +61,13 @@ public class Graph {
 		return node;
 	}
 	
-	public Vertex getNoEstrela(){
+	public List<Vertex> getNoEstrela(){
 				
 		List<Vertex> nodes = this.getNodes();
-		Vertex node = nodes.get(0);
-		int size = node.getEdgesSize();
-				
+		List<Vertex> stars = new ArrayList<Vertex>();
+
+		int maxSize = nodes.get(0).getEdgesSize();
+		//Encontra o numero maximo de arestas de um no, maxSize
 		Iterator it = subgraphs.entrySet().iterator();
 		while (it.hasNext()) {
 			Map.Entry pair = (Map.Entry) it.next();
@@ -78,17 +79,37 @@ public class Graph {
 				Map.Entry pair2 = (Map.Entry) it2.next();
 				Vertex nodeTemp = ((Vertex) pair2.getValue());
 				
-				if(size < nodeTemp.getEdgesSize()){
+				if(maxSize < nodeTemp.getEdgesSize()){
 
-					size = nodeTemp.getEdgesSize();
-					node = nodeTemp;
+					maxSize = nodeTemp.getEdgesSize();
+
 				}
 				
 			}
 			
 		}
+		
+		//adiciona stars a lista com maxsize igual
+		it = subgraphs.entrySet().iterator();
+		while (it.hasNext()) {
+			Map.Entry pair = (Map.Entry) it.next();
+			Subgraph subgrafo = ((Subgraph) pair.getValue());
+			
+			
+			Iterator it2 = subgrafo.getNodes().entrySet().iterator();
+			while (it2.hasNext()) {
+				Map.Entry pair2 = (Map.Entry) it2.next();
+				Vertex nodeTemp = ((Vertex) pair2.getValue());
 				
-		return node;
+				if(maxSize == nodeTemp.getEdgesSize()){
+					stars.add( nodeTemp );
+				}
+				
+			}
+			
+		}
+		
+		return stars;
 	}
 	
 	@Override

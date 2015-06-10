@@ -11,11 +11,11 @@ import java.util.List;
 import java.util.Map;
 public class ParseDot {
 	private Graph grafo;
-	private String[] color = {"blue4","darkolivegreen","darkorange","aliceblue"
-		,"antiquewhite","aquamarine","beige","violetred4","blue","blueviolet"
+	private String[] color = {"purple","darkolivegreen","darkorange","aliceblue"
+		,"antiquewhite","aquamarine","beige","violetred4","powderblue","blueviolet"
 		,"brown","burlywodd","cadetblue","chartreuse","chocolate","coral"
 		,"cornflowerblue","conrsilk","crimson","cyan","darkengoldenrod"
-		,"drakgreen","darkorchid","darksalmon","darkseegreen","darkslateblue"
+		,"drakgreen","darkorchid","darksalmon","forestgreen","steelblue1"
 		,"darkturquoise","deeppink","deeppink4","deepskyblue","deepskyblue4"
 		,"dodgerblue","dodgerblue4","firebrick1","forestgreen","gold"};
 
@@ -25,8 +25,7 @@ public class ParseDot {
 	}
 	public void createFile(){
 		try {
-			int i = 4;
-			String filename = "Graph", extension =".dot";
+			String filename = "DotView", extension =".dot";
 			File file= new File(filename + extension);
 
 			if (file.createNewFile()){
@@ -34,7 +33,7 @@ public class ParseDot {
 			}else{
 				String filename_parts [];
 				filename_parts = file.getName().toString().split("\\.");
-				File file2  = new File(filename_parts[0] + i + extension);
+				File file2  = new File(filename_parts[0] + extension);
 				file2.createNewFile();
 				writeToFile(file2);
 			}
@@ -55,11 +54,13 @@ public class ParseDot {
 				bw.write(grafo.getLinks().get(i).getSource().getName());
 				bw.write(" -- ");
 				bw.write(grafo.getLinks().get(i).getTarget().getName());
-				bw.write(" [label = " + grafo.getLinks().get(i).getValue() + "];\n");
+				bw.write(" [label = " + grafo.getLinks().get(i).getValue() + " penwidth = " + (double)grafo.getLinks().get(i).getValue()/50 + "];\n");
 
 				if(i == grafo.getLinks().size()-1){
-					Vertex v = grafo.getNoEstrela();
-					bw.write(v.getName() + "[shape = pentagon];\n");
+					List<Vertex> vStars = grafo.getNoEstrela();
+					for(int j = 0; j < vStars.size();j++){
+						bw.write(vStars.get(j).getName() + "[shape = tripleoctagon];\n");	
+					}
 					coloring(file,bw);
 					bw.write("}");
 				}
