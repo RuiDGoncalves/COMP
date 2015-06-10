@@ -13,6 +13,14 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.Scanner;
 import java.util.ArrayList;
+import java.util.LinkedList;
+
+import algorithms.Dijkstra;
+import graph.*;
+
+import org.junit.Test;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 public class D3FDG2Dot
 {
@@ -58,15 +66,43 @@ public class D3FDG2Dot
 
 		Graph grafo = new Graph();
 		
-		for(Nodes node : nodes) {
-                	grafo.addNode(node);
-                }
+	    for(Links li : links) {
+		
+			Nodes noSource = nodes.get(li.getSource());
+			Vertex verticeS = grafo.verify(noSource.getGroup(), new Vertex(noSource.getName()) );
+			grafo.add(noSource.getGroup(), verticeS);
+			
+			Nodes noTarget = nodes.get(li.getTarget());
+			Vertex verticeT = grafo.verify(noTarget.getGroup(), new Vertex(noTarget.getName()) );
+		  	grafo.add(noTarget.getGroup(), verticeT);
+			
+		  	Edge aresta = new Edge(verticeS, verticeT, li.getValue());
+		  	verticeS.addEdge(aresta);
+		  	verticeT.addEdge(aresta);
+			grafo.add(aresta);
+			
+		}
 
-                for(Links li : links) {
-                	grafo.addLink(li);
-                }
-		 Printer writer = new Printer(grafo, links, nodes);
-                writer.createFile();
+
+		
+		Dijkstra dijkstra = new Dijkstra(grafo);
+		dijkstra.execute(grafo.getNodes().get(0));
+		LinkedList<Vertex> path = dijkstra.getPath(grafo.getNodes().get(4));
+
+		if(path == null)		{
+		  System.out.println("nao tem nada");		   return;
+		}
+		
+		if(path.size() <= 0)		{
+		  System.out.println("nao tem nada outra vez");
+		   return;		}		 
+		//assertNotNull(path);
+		//assertTrue(path.size() > 0);
+
+		for(Vertex vertex : path)		{			System.out.println(vertex);
+		}
+
+	}
 }
 PARSER_END(D3FDG2Dot)
 

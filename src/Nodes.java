@@ -17,7 +17,6 @@ public class Nodes {
 	
 	public Nodes() {
 		id = ID;
-		//ID++;
 	}
 	
 	public int getId(){
